@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACKLIST BONK | Token Governance with Teeth</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Mono:wght@300;500&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.70.1/lib/index.iife.min.js"></script>
+    <style>
+        :root {
+            --primary: #f08001;
+            --secondary: #2b2b2b;
+            --accent: #d84c15;
+            --text: #e0e0e0;
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #ffb351;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Mono', monospace;
+            background: url('asfalt-light.png'), var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        .logo-img {
+            height: 60px;
+            margin-right: 15px;
+        }
+
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--white);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .logo span {
+            color: gray;
+        }
+
+        .wallet-btn {
+            background:  gray;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-family: 'DM Mono', monospace;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(95, 92, 102, 0.3);
+        }
+
+        .wallet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(126, 87, 194, 0.4);
+        }
+
+        .wallet-btn.connected {
+            background: linear-gradient(135deg, var(--success), #2e7d32);
+            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .wallet-btn.connected:hover {
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .wallet-address {
+            font-size: 12px;
+            background-color: var(--card-bg);
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-left: 10px;
+            color: var(--text);
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 0px;
+        }
+
+        .hero h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 48px;
+            margin-bottom: 0px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            max-width: 700px;
+            margin: 0 auto 30px;
+            color: rgba(224, 224, 224, 0.8);
+            font-size: 18px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid var(--accent);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            color: rgba(224, 224, 224, 0.6);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .section-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(224, 224, 224, 0.1);
+            margin-left: 20px;
+        }
+
+        .voting-arena {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .voting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .voting-timer {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 62, 62, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .voting-timer span {
+            margin-left: 8px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .candidate-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .candidate-card {
+            background-color: rgba(30, 30, 30, 0.8);
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .candidate-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 5px 15px rgba(126, 87, 194, 0.1);
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .candidate-wallet {
+            font-size: 12px;
+            color: rgba(224, 224, 224, 0.6);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .candidate-reason {
+            font-size: 14px;
+            color: var(--primary);
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .vote-btn {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .vote-btn:hover {
+            background-color: rgba(255, 62, 62, 0.1);
+        }
+
+        .vote-btn.voted {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .vote-count {
+            font-size: 12px;
+            color: rgba(224, 224, 224, 0.6);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .vote-count::before {
+            content: '↑';
+            margin-right: 5px;
+            color: var(--primary);
+        }
+
+        .shaming-wall {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .shaming-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .shame-card {
+            background-color: rgba(30, 30, 30, 0.8);
+            border-radius: 6px;
+            padding: 15px;
+            border-left: 3px solid var(--error);
+        }
+
+        .shame-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .shame-wallet {
+            font-size: 12px;
+            color: rgba(224, 224, 224, 0.6);
+        }
+
+        .shame-reason {
+            font-size: 14px;
+            color: var(--error);
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .shame-timer {
+            font-size: 12px;
+            color: var(--warning);
+            display: flex;
+            align-items: center;
+        }
+
+        .shame-timer::before {
+            content: '⏳';
+            margin-right: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 60px;
+            color: rgba(224, 224, 224, 0.6);
+            font-size: 14px;
+        }
+
+        .wallet-container {
+            display: flex;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .wallet-container {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="image.png" alt="Blacklist Pump Logo" class="logo-img">
+                    <div class="logo">BLACKLIST<span>BONK</span></div>
+                </div>
+                <div class="wallet-container">
+                    <button id="connectWallet" class="wallet-btn">Connect Wallet</button>
+                    <div id="walletAddress" class="wallet-address" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Governance with Consequences</h1>
+            <p>A token where holders vote to blacklist random wallets. Blacklisted wallets can't transfer for 1 hour. Your vote matters.</p>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Blacklisted</h3>
+                <div class="value">1</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Blacklists</h3>
+                <div class="value">1</div>
+            </div>
+            <div class="stat-card">
+                <h3>Next Vote In</h3>
+                <div class="value">15 min</div>
+            </div>
+            <div class="stat-card">
+                <h3>Your Voting Power</h3>
+                <div class="value" id="votingPower">1</div>
+            </div>
+        </section>
+
+        <section class="voting-arena">
+            <div class="voting-header">
+                <h2 class="section-title">Voting Arena</h2>
+                <div class="voting-timer">
+                    Voting ends in: <span>15m</span>
+                </div>
+            </div>
+            <div class="candidate-list">
+                <div class="candidate-card">
+                    <div class="candidate-header">
+                        <div class="candidate-wallet">7g5S...k9w2</div>
+                        <button class="vote-btn">Vote to Blacklist</button>
+                    </div>
+                    <div class="candidate-reason">"Sold immediately after BONK"</div>
+                    <div class="vote-count">142 votes</div>
+                </div>
+                <div class="candidate-card">
+                    <div class="candidate-header">
+                        <div class="candidate-wallet">3h8D...p4q1</div>
+                        <button class="vote-btn">Vote to Blacklist</button>
+                    </div>
+                    <div class="candidate-reason">"Never retweeted dev posts"</div>
+                    <div class="vote-count">98 votes</div>
+                </div>
+                <div class="candidate-card">
+                    <div class="candidate-header">
+                        <div class="candidate-wallet">9j2F...m7n3</div>
+                        <button class="vote-btn">Vote to Blacklist</button>
+                    </div>
+                    <div class="candidate-reason">"Bought absolute top"</div>
+                    <div class="vote-count">76 votes</div>
+                </div>
+                <div class="candidate-card">
+                    <div class="candidate-header">
+                        <div class="candidate-wallet">5k9L...v2w8</div>
+                        <button class="vote-btn">Vote to Blacklist</button>
+                    </div>
+                    <div class="candidate-reason">"Asked dumb questions in TG"</div>
+                    <div class="vote-count">65 votes</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="shaming-wall">
+            <h2 class="section-title">Wall of Shame</h2>
+            <div class="shaming-list">
+                <div class="shame-card">
+                    <div class="shame-header">
+                        <div class="shame-wallet">2f7G...h5k9</div>
+                        <div class="shame-timer">43m remaining</div>
+                    </div>
+                    <div class="shame-reason">"Paperhanded at 2% profit"</div>
+                </div>
+                <div class="shame-card">
+                    <div class="shame-header">
+                        <div class="shame-wallet">8m3N...q6p2</div>
+                        <div class="shame-timer">15m remaining</div>
+                    </div>
+                    <div class="shame-reason">"Called token a scam in VC"</div>
+                </div>
+                <div class="shame-card">
+                    <div class="shame-header">
+                        <div class="shame-wallet">1p9K...j4h7</div>
+                        <div class="shame-timer">1h 2m remaining</div>
+                    </div>
+                    <div class="shame-reason">"FOMO'd in then complained"</div>
+                </div>
+                <div class="shame-card">
+                    <div class="shame-header">
+                        <div class="shame-wallet">6v2B...t8m1</div>
+                        <div class="shame-timer">22m remaining</div>
+                    </div>
+                    <div class="shame-reason">"Made cringe meme about dev"</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>BLACKLIST BONK TOKEN — Governance with teeth</p>
+            <p>Not financial advice. Use at your own risk.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Solana wallet connection
+        document.getElementById('connectWallet').addEventListener('click', async () => {
+            if (window.solana && window.solana.isPhantom) {
+                try {
+                    const response = await window.solana.connect();
+                    const walletAddress = response.publicKey.toString();
+                    
+                    // Update UI
+                    document.getElementById('connectWallet').textContent = 'Connected';
+                    document.getElementById('connectWallet').classList.add('connected');
+                    
+                    const walletAddressEl = document.getElementById('walletAddress');
+                    walletAddressEl.textContent = walletAddress.substring(0, 4) + '...' + walletAddress.substring(walletAddress.length - 4);
+                    walletAddressEl.style.display = 'block';
+                    
+                    // Set voting power to 1
+                    document.getElementById('votingPower').textContent = '1';
+                    
+                } catch (err) {
+                    console.error('Connection error:', err);
+                }
+            } else {
+                alert('Phantom wallet not found! Please install it from https://phantom.app/');
+            }
+        });
+
+        // Voting functionality - modified to work without wallet connection
+        document.querySelectorAll('.vote-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.textContent = 'Voted ✓';
+                this.classList.add('voted');
+                
+                // Simulate vote count increase
+                const voteCount = this.closest('.candidate-card').querySelector('.vote-count');
+                const currentVotes = parseInt(voteCount.textContent.split(' ')[0]);
+                voteCount.textContent = (currentVotes + 1) + ' votes';
+            });
+        });
+
+        // Initialize voting power to 1 even without wallet connection
+        document.getElementById('votingPower').textContent = '1';
+    </script>
+</body>
+</html>
